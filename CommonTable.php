@@ -8,8 +8,14 @@ use Exception;
 
 use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Sql;
+use Zend\Validator\Db\RecordExists;
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\Adapter\Adapter;
+use Zend\Db\Sql\Select;
+use Zend\Db\Sql\Delete;
+use Zend\Db\Sql\Update;
+use Zend\Db\Sql\Insert;
+
 use Zend\Stdlib\DateTime;
 
 class CommonTable {
@@ -48,7 +54,37 @@ class CommonTable {
     	return $resultset->toArray();
     	
     }
+
+	/*
+	Table Name: $table
+	Column Name: $column_name
+	Record: $record
+	If Exist Return 1 otherwise 0
+	*/
+	public function data_exist($table, $column_name, $record){
+
+		$adapter = $this->tableGateway->getAdapter();
+		$validator = new RecordExists(
+			array(
+				'table'   => $table,
+				'field'   => $column_name,
+				'adapter' => $adapter
+			)
+		);
+		if($validator->isValid($record)){
+			return 0;
+		}else{
+			return 1;                    	
+		}
+
+	}
     
+
+	/*
+	Table Name: $table
+	Data: $data
+	$data = array('column_name' => value);
+	*/
     public function insert($table, $data){
     	
     	$adapter = $this->tableGateway->getAdapter();
@@ -66,6 +102,16 @@ class CommonTable {
     	
     }
     
+	/*
+	Table Name = $table = 'table_name'
+	Column = $column = array('column1', column2);
+	If Column Param not Pass it;s return * value
+	WHere = $w = array('column_name' => 'value');
+	Default where condition set with AND oprator
+	Limit = $limit = 'value';
+	Order By = $order_by = array('Order Tye', 'column_name');
+	Order Type = ASC/DESC
+	*/
     public function get($table = null, $column = null, $w = null, $limit = null, $order_by = null){
     	
     	$adapter = $this->tableGateway->getAdapter();
@@ -106,6 +152,12 @@ class CommonTable {
     		
     }
     
+
+	/*
+	Table Name = $table
+	Where = $w = array('column_name' => 'value');
+	Default where cluse is AND
+	*/
     public function delete($table, $w){
     	
     	$adapter = $this->tableGateway->getAdapter();
@@ -135,11 +187,20 @@ class CommonTable {
     		return $rowset->toArray();   die;
     }
     
+	/*
+
+	*/
     public function update($table, $where, $data_arr){
     	
     }
     
-    public function getReport($table, $where, $to, $from){
+	/*
+	Table Name = $table = 'table_name',
+	Where = $where = array('column_name');
+	Start = $to = 'to_value',
+	End = $from = 'from_value'
+	*/
+    public function getBetween($table, $where, $to, $from){
     	
     	
     		$adapter = $this->tableGateway->getAdapter();
