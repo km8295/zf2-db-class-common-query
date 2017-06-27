@@ -23,6 +23,8 @@ class CommonTable {
     protected $tableGateway;
     public $branch_id;
     public $userId;
+
+	public $query;
     
     public function __construct(TableGateway $tableGateway) {
         $this->tableGateway = $tableGateway;
@@ -61,7 +63,7 @@ class CommonTable {
 	Record: $record
 	If Exist Return 1 otherwise 0
 	*/
-	public function data_exist($table, $column_name, $record){
+	public function data_exist($table, $column_name, $record){ 
 
 		$adapter = $this->tableGateway->getAdapter();
 		$validator = new RecordExists(
@@ -95,6 +97,8 @@ class CommonTable {
     	$sql .= " VALUES ";
     	$sql .= "('". implode("', '", $data)."') ";
     	
+		// Set Insert Query in Global Object
+		$this->setQuery($sql);
     	
     	$result = $adapter->query($sql, \Zend\Db\Adapter\Adapter::QUERY_MODE_EXECUTE);
     	
@@ -144,6 +148,8 @@ class CommonTable {
     			$select->order($order_by[1]." ".$order_by[0]);
     		}
     		
+			// Set Select Query in Global Var
+			$this->setQuery($select->getSqlString());
     		//echo $select->getSqlString(); die();
     		
     	});
@@ -180,8 +186,8 @@ class CommonTable {
     			echo "Must be Need Where";
     		}
     		
-    		
-    		//echo $delete->getSqlString(); die;
+			//Set Delete Query in Global Var
+    		$this->setQuery($delete->getSqlString());
     	});
     		
     		return $rowset->toArray();   die;
@@ -209,6 +215,9 @@ class CommonTable {
     		$sql .= " FROM ".$table." "; 
     		$sql .= " WHERE ".$where." Between '".$to."' AND ";
     		$sql .= " '".$from."' ";
+
+			// Set Select with Between Query
+			$this->setQuery($sql);
     		
     		$result = $adapter->query($sql, \Zend\Db\Adapter\Adapter::QUERY_MODE_EXECUTE);
     		$resultset = new ResultSet();
@@ -219,6 +228,9 @@ class CommonTable {
     	
     }
     
+	/*
+	Example of Join Query In ZF2
+	*/
     public function getBranchwithpermission() {
     	/*
     	 * SELECT branch_master.branch_name as branch_name, branch_master.branch_id as branch_id
@@ -243,6 +255,8 @@ class CommonTable {
     	$where->equalTo('users.user_id', $userId);
     	$select->where($where);
     	$statement = $sql->prepareStatementForSqlObject($select);
+		
+		$this->setQuery($select->getSqlString());
     	//         echo $select->getSqlString();
     	//         die();
     	//echo "<br>";
@@ -251,6 +265,17 @@ class CommonTable {
     	$resultset = new ResultSet();
     	$resultset->initialize($result);
     	return $resultset->toArray();
+    }
+
+
+	// Set Query as String
+	public function setQuery($query){
+    	$this->query = $query;
+    }
+    
+	// Get/Return Query as String
+    public function getQuery(){
+    	return $this->query;
     }
 
 }
