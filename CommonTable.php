@@ -197,7 +197,20 @@ class CommonTable {
 
 	*/
     public function update($table, $where, $data_arr){
+    	$adapter = $this->tableGateway->getAdapter();
+    	$sql = new Sql($adapter);
     	
+    	$update = $sql->update()->table($table)
+    	->set($data_arr)->where($where);
+    	
+    	$statement = $sql->prepareStatementForSqlObject($update);
+    	
+    	//echo $update->getSqlString();
+    	$this->setQuery($update->getSqlString());
+    	
+    	$result = $statement->execute();
+    	
+    	die();
     }
     
 	/*
